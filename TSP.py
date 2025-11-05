@@ -393,7 +393,7 @@ def DrawGraph(GraphObj, ShowEdges, ShowVertPos):
 
 def TracePath(GraphObj, VertNamesList, PathName, ShowVertPos, ShowAllEdges, ShowPathWeight, PathColor):
     # Draw the graph, then draw the graph specified in the "VertNamesList" array.
-    PossibleColors = ["blue", "red", "green", "yellow", "orange", "purple", "brown"]
+    PossibleColors = ["blue", "red", "green", "orange", "purple", "cyan"]
     VertexPosDict = ConvertVertexPos(GraphObj)
     GraphBounds = GraphObj.GetBounds()
     VertexSize = 100/GraphBounds
@@ -458,131 +458,93 @@ def TracePath(GraphObj, VertNamesList, PathName, ShowVertPos, ShowAllEdges, Show
 
     Cursor.goto(-325, -275)
     Cursor.pendown()
-    Cursor.write("Click anywhere in the window to exit", ("Arial", "left", 16, "normal"))
+    Cursor.write("Click anywhere in the window to exit", ("Arial", "left", 18, "bold"))
     Cursor.penup()
     MyScreen.exitonclick()
 
-def AAAAAAAATraceGraphPath(GraphObj, VertNamesList, ShowVertPos, ShowAllEdges, ShowPathWeight):
-    # Draw the graph, then draw the graph specified in the "VertNamesList" array.
-    VertexPosDict = {}
-    DrawComplete = []
+    return MyScreen
+
+def TracePaths(GraphObj, PathDict, ShowVertPos, ShowAllEdges, ShowPathWeight):
+    # Trace a set of paths listed in a dictionary format. The dictionary should be formated so that
+    # Each key is the name of the path and each key is the array which defines the order in which vertices
+    # are visited.
+    UndrawnPaths = list(PathDict.keys())
+    PossibleColors = ["blue", "red", "green", "orange", "purple", "cyan"]
+    VertexPosDict = ConvertVertexPos(GraphObj)
     GraphBounds = GraphObj.GetBounds()
-    GraphVertices = GraphObj.VertexDict()
     VertexSize = 100/GraphBounds
 
-    MyScreen = turtle.Screen()
+    MyScreen = DrawGraph(GraphObj, ShowAllEdges, ShowVertPos)
     MyScreen.title(GraphObj.GetName())
 
-    Cursor = turtle.Turtle()
-    Cursor.penup()
-    Cursor.pensize(math.floor(VertexSize/10))
-
-    Cursor.hideturtle()
-
-    for V in GraphObj.GetVertices():
-        # Plot the vertices
-        VPos = V.GetPosition()
-        ModifiedVertexPos = (52*((VPos[0])-(GraphBounds*0.5)), 52*((VPos[1])-(GraphBounds*0.5)))
-        VertexPosDict[V.GetName()] = (ModifiedVertexPos[0], (ModifiedVertexPos[1]+(VertexSize)))
-
-        Cursor.goto(ModifiedVertexPos)
-        Cursor.pendown()
-        Cursor.circle(VertexSize)
-        Cursor.penup()
-        Cursor.goto((ModifiedVertexPos[0]-VertexSize*1.5), (ModifiedVertexPos[1]-VertexSize*1.5))
-        Cursor.pendown()
-
-        # Write the names of the vertices and, if specified, their positions
-        if ShowVertPos == False:
-            Cursor.write(V.GetName(), ("Arial", VertexSize*3, "normal"))
-
-        if ShowVertPos == True:
-            VertPosString = str(V.GetPosition())
-            VertNameString = V.GetName()
-            VertString = VertNameString + " " + VertPosString
-            Cursor.write(VertString, ("Arial", VertexSize*4, "normal"))
-
-
-        Cursor.penup()
-
-    if ShowAllEdges == True:
-        # If specified, draw all the edges with their corresponding weights.
-        for E in GraphVertices:
-                CurrentVertPos = VertexPosDict[E]
-                Cursor.penup()
-                Cursor.goto(CurrentVertPos)
-                for F in GraphVertices:
-                    OtherVertPos = VertexPosDict[F]
-                    Cursor.pendown()
-                    if E != F and F not in DrawComplete:
-                        VertDist = GraphObj.GetDistance(E, F, True)
-                        Midpoint = ((VertexPosDict[E][0] + VertexPosDict[F][0])/2, (VertexPosDict[E][1] + VertexPosDict[F][1])/2)
-                        Cursor.goto(Midpoint)
-                        Cursor.penup()
-                        Cursor.goto((5+Midpoint[0], 5+Midpoint[1]))
-                        Cursor.pendown()
-                        Cursor.color("Red")
-                        Cursor.write(str(VertDist), ("Arial", VertexSize*4, "normal"))
-                        Cursor.penup()
-                        Cursor.color("Black")
-                        Cursor.goto(Midpoint)
-                        Cursor.pendown()
-                        Cursor.goto(OtherVertPos)
-                        Cursor.penup()
-                        Cursor.goto(CurrentVertPos)
-                        Cursor.pendown()
-                    
-                DrawComplete.append(E)
-    
-    Cursor.penup()
-    Cursor.pencolor("Blue")
-    Cursor.pensize(math.floor(1+(VertexSize/10)))
-    CurrentVert = None
-    PreviousVert = None
-
-    for n in range (0, len(VertNamesList)-1):
-        PreviousVert = VertexPosDict[VertNamesList[n]]
-        CurrentVert = VertexPosDict[VertNamesList[n+1]]
-        if ShowAllEdges == True:
-            Cursor.goto((PreviousVert[0], PreviousVert[1]))
-            Cursor.pendown()
-            Cursor.goto((CurrentVert[0], CurrentVert[1]))
-            Cursor.penup()
+    while len(UndrawnPaths) > 0:
+        CurrentPath = UndrawnPaths[0]
+        VertNamesList = PathDict[CurrentPath]
+        pathcolor = PossibleColors[random.randint(0, len(PossibleColors)-1)]
         
-        else:
-            VertDist = GraphObj.GetDistance(VertNamesList[n], VertNamesList[n+1], True)
-            Midpoint = ((CurrentVert[0] + PreviousVert[0])/2, (CurrentVert[1] + PreviousVert[1])/2)
-            Cursor.goto((PreviousVert[0], PreviousVert[1]))
-            Cursor.pendown()
-            Cursor.goto(Midpoint)
-            Cursor.penup()
-            Cursor.goto((5+Midpoint[0], 5+Midpoint[1]))
-            Cursor.pendown()
-            Cursor.write(str(VertDist), ("Arial", VertexSize*4, "normal"))
-            Cursor.penup()
-            Cursor.goto(Midpoint)
-            Cursor.pendown()
-            Cursor.goto((CurrentVert[0], CurrentVert[1]))
-            Cursor.penup()
+        NewCursor = turtle.Turtle()
+        NewCursor.penup()
+        NewCursor.pensize(math.floor(1+(VertexSize/10)))
+        NewCursor.color(pathcolor)
+        NewCursor.hideturtle()
 
-    WriteString = "Path = "+str(VertNamesList)
-    Cursor.goto(-80.0, 270)
-    Cursor.pensize(math.floor(VertexSize/10))
-    Cursor.write(WriteString, ("Arial", "center", 20, "bold"))
-    Cursor.penup()
+        CurrentVert = None
+        PreviousVert = None
 
-    if ShowPathWeight == True:
-        TotalWeight = GraphObj.PathWeight(VertNamesList, True)
-        WeightString = "Total path weight: "+str(TotalWeight)
-        Cursor.goto(-80.0, 255)
-        Cursor.pendown()
-        Cursor.write(WeightString, ("Arial", "center", 20, "bold"))
-        Cursor.penup()
+        for n in range (0, len(VertNamesList)-1):
+            PreviousVert = VertexPosDict[VertNamesList[n]]
+            CurrentVert = VertexPosDict[VertNamesList[n+1]]
+            if ShowAllEdges == True:
+                NewCursor.goto((PreviousVert[0], PreviousVert[1]))
+                NewCursor.pendown()
+                NewCursor.goto((CurrentVert[0], CurrentVert[1]))
+                NewCursor.penup()
+        
+            else:
+                VertDist = GraphObj.GetDistance(PreviousVert, CurrentVert, True)
+                Midpoint = ((CurrentVert[0] + PreviousVert[0])/2, (CurrentVert[1] + PreviousVert[1])/2)
+                NewCursor.goto((PreviousVert[0], PreviousVert[1]))
+                NewCursor.pendown()
+                NewCursor.goto(Midpoint)
+                NewCursor.penup()
+                NewCursor.goto((5+Midpoint[0], 5+Midpoint[1]))
+                NewCursor.pendown()
+                NewCursor.write(str(VertDist), ("Arial", VertexSize*4, "normal"))
+                NewCursor.penup()
+                NewCursor.goto(Midpoint)
+                NewCursor.pendown()
+                NewCursor.goto((CurrentVert[0], CurrentVert[1]))
+                NewCursor.penup()
 
-    Cursor.pencolor("Black")
-    print("Finished tracing path.")
-    MyScreen.exitonclick()
-    turtle.done()
+        WriteString = str(CurrentPath) + ": " + str(VertNamesList)
+        NewCursor.goto(-325.0, 270)
+        NewCursor.pensize(math.floor(VertexSize/10))
+        NewCursor.write(WriteString, ("Arial", "left", 20, "bold"))
+        NewCursor.penup()
+
+        if ShowPathWeight == True:
+            TotalWeight = GraphObj.PathWeight(VertNamesList, True)
+            WeightString = "Total path weight: "+str(TotalWeight)
+            NewCursor.goto(-325.0, 255)
+            NewCursor.pendown()
+            NewCursor.write(WeightString, ("Arial", "left", 20, "bold"))
+            NewCursor.penup()
+
+            NewCursor.pencolor("Black")
+
+            NewCursor.goto(-325, -275)
+            NewCursor.penup()
+
+            # Wait 3 seconds before clearing the path drawn and moving on to the next one.
+            time.sleep(3)
+            MyScreen.onclick(NewCursor.reset())
+            NewCursor.hideturtle()
+
+        UndrawnPaths.pop(0)
+
+   
+
+
     
 
         
