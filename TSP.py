@@ -392,6 +392,7 @@ def DrawGraph(GraphObj, ShowEdges, ShowVertPos):
     return MyScreen
 
 def TracePath(GraphObj, VertNamesList, PathName, ShowVertPos, ShowAllEdges, ShowPathWeight, PathColor):
+    # Draw the graph, then draw the graph specified in the "VertNamesList" array.
     PossibleColors = ["blue", "red", "green", "yellow", "orange", "purple", "brown"]
     VertexPosDict = ConvertVertexPos(GraphObj)
     GraphBounds = GraphObj.GetBounds()
@@ -405,6 +406,8 @@ def TracePath(GraphObj, VertNamesList, PathName, ShowVertPos, ShowAllEdges, Show
     Cursor.pensize(math.floor(1+(VertexSize/10)))
     if str(PathColor).lower() in PossibleColors:
         Cursor.color(PathColor)
+    else:
+        Cursor.color("blue")
 
     Cursor.hideturtle()
 
