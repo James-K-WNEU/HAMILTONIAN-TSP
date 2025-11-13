@@ -5,28 +5,127 @@ import TSP
 import itertools
 import time
 
-def test():
+def singletest(algoname, GraphObj, StartVertName, CycleBool):
+    # Method intended to test the accuracy/reliability of TSP algorithms and heuristics.
+
+    BFP = BruteForce(GraphObj, StartVertName, CycleBool)
+    BFPCost  = GraphObj.PathWeight(BFP, False)
+    AlgoP = None
+    AlgoCost = 0
+    resultdouble = (None, None)
+
+
+    # Run the specified algorithm and compare the total cost of the path it generates to 
+    # the "optimal" path found via brute force for the given graph.
+    # If the resulting path has total cost equal to optimal result, we consider it
+    # a "success" and increment the "success" counter by 1. Otherwise, we consider it a 
+    # "failure" 
+
+    if str(algoname).lower() == "nn" or str(algoname).lower() == "nearest neighbor":
+        AlgoP = NearestNeighbor(GraphObj, StartVertName, CycleBool)
+        AlgoCost = GraphObj.PathWeight(AlgoP, False)
+
+    if str(algoname).lower() == "ni" or str(algoname).lower() in ["nearest insertion", "nearest insert"]:
+        AlgoP = NearestInsert(GraphObj, StartVertName, CycleBool)
+        AlgoCost = GraphObj.PathWeight(AlgoP, False)
+    
+    if BFPCost == AlgoCost:
+        resultdouble = (True, AlgoCost - BFPCost)
+    else:
+        resultdouble = (False, AlgoCost - BFPCost)
+
+    return resultdouble
+
+
+def itertest(algoname, VertNameList, StartVertName, iter, CycleBool):
+    # Method intended to test the accuracy/reliability of TSP algorithms and heuristics iteratively.
+    # By the Law of Large Numbers, the success rate will more closely reflect how accurate the algorithm
+    # is the larger "iter" is. 
+
+    # Run the algorithm specified "iter" times using randomly generated graphs.
+    # Each time we run the algorithm, get the cost of the path/cycle it generates
+    # and compare it to the "brute force" result. We assume the brute force algorithm
+    # will always produce an optimal result for any given graph. 
+
+    successnum = 0
+    successrat = 0
+    successperc = 0
+
+    for i in range(0, iter):
+        GraphName = "Graph " + str(i)
+        G = TSP.TSPGraph(10, GraphName)
+        G.Clear()
+        G.PopulateRandom(VertNameList)
+
+        trial = singletest(algoname, G, StartVertName, CycleBool)
+        
+    # If the resulting algorithm produces a path of equal cost equal to optimal result, we consider it
+    # a "success" and increment the "success" counter by 1. Otherwise, we consider it a 
+    # "failure" and do not increment. We can use this to get a rough idea of how "accurate"
+    # the given heuristic is in terms of getting us an optimal solution.
+
+        if trial[0] == True:
+            successnum +=1
+    
+    successrat = successnum/iter
+    successperc = successrat*100
+
+    return(successnum, successrat, successperc, iter)
+
+def testreport(testtuple, testname):
+    # print the results of an itertest trial to the screen. 
+    # takes the tuple (successnum, successrate, sucessperc, numtestsran) as input.
+
+    if testtuple != None and len(testtuple) == 4 and testname != None:
+        successnum = testtuple[0]
+        successrate = testtuple[1]
+        successperc = testtuple[2]
+        numtests = testtuple[3]
+
+        print("\n Tests results for ", testname, ":")
+
+        if numtests != None:
+            print("Number of tests ran: ", numtests)
+
+        if successnum != None:
+            print("Number of successful outcomes: ", successnum)
+
+        if successrate != None:
+            print("Success rate: ", successrate)
+
+        if successperc != None:
+            print("Success percentage: ", successperc)
+
+        if numtests != None and successnum != None:
+            print("Success ratio: ", successnum, "/", numtests)
+
+
+def algotest(graphvertices, startvert, cyclebool):
+    # Method intended to test if each algorithm is working properly.
+
     # Generate a randomized graph with vertex names as follows:
-    R = RandomGraph(["A", "B", "C", "D", "E", "F", "G", "H"])
+    R = RandomGraph(graphvertices)
     # Print the cost/distance matrix for the randomized graph. We can use this to
     # represent our "distance function"
     print("Cost matrix for randomized graph R:")
     for r in R.CostMatrix(True):
         print(str(r))
 
-    NNP = NearestNeighbor(R, "A", True)
-    print("\n Nearest Neighbor Path Result:", NNP)
-    print("Total Path Weight:", R.PathWeight(NNP, True))
-
-    BFP = BruteForce(R, "A", True)
+    BFP = BruteForce(R, startvert, cyclebool)
     print("\n Brute Force Path Result:", BFP)
     print("Total Path Weight:", R.PathWeight(BFP, True))
 
-    NIP = NearestInsert(R, "A", True)
+    NNP = NearestNeighbor(R, startvert, cyclebool)
+    print("\n Nearest Neighbor Path Result:", NNP)
+    print("Total Path Weight:", R.PathWeight(NNP, True))
 
-    PathDict = {"Nearest Neighbor": NNP, "Brute Force": BFP}
+    NIP = NearestInsert(R, startvert, cyclebool)
+    print("\n Nearest Insertion Path Result:", NIP)
+    print("Total Path Weight:", R.PathWeight(NIP, True))
 
-    #TSP.TracePaths(R, PathDict, False, True, True)
+    PathDict = {"Brute Force": BFP, "Nearest Neighbor": NNP, "Nearest Insertion": NIP}
+
+    TSP.TracePaths(R, PathDict, False, True, True)
 
 def RandomGraph(NameSet):
     # Generate a random graph with vertex names from the set "NameSet".
@@ -46,20 +145,20 @@ def BruteForce(GraphObj, StartVertName, CycleBool):
     pathdict = {}
     pathlist =[]
     GraphVertexNames = GraphObj.GetVertexNames()
+    GraphVertexNames.remove(StartVertName)
 
     for p in itertools.permutations(GraphVertexNames):
         # Get every unique path in the graph starting at the specified vertex.
         # Add the starting vertex to the end of the path if neccessary to make it a cycle.
-        if p[0] == StartVertName:
-            patharray = []
-            for t in p:
-                patharray.append(t)
+        patharray = [StartVertName]
+        for t in p:
+            patharray.append(t)
 
-            if CycleBool == True:
-                patharray.append(StartVertName)
+        if CycleBool == True:
+            patharray.append(StartVertName)
 
-            if patharray not in pathlist:
-                pathlist.append(patharray)
+        if patharray not in pathlist:
+            pathlist.append(patharray)
             
 
     for i in range(0, len(pathlist)):
@@ -68,11 +167,8 @@ def BruteForce(GraphObj, StartVertName, CycleBool):
         pathlength = GraphObj.PathWeight(currentpath, False)
         pathdict[i] = pathlength
 
-    # Sort the paths in pathdict based on their length (total weight)
-    SortedLengths = dict(sorted(pathdict.items(), key=lambda item: item[1]))
-
     # Return the path with the shortest length as our finalpath
-    finalpath = pathlist[min(SortedLengths, key=SortedLengths.get)]
+    finalpath = pathlist[min(pathdict, key=pathdict.get)]
 
     return finalpath
 
@@ -140,25 +236,38 @@ def NearestInsert(GraphObj, StartVertName, CycleBool):
         while len(UnvisitedVertices) > 0:
             vertexdistances = []
             closestvertdict = {}
+        # Each time we visit a vertex, we remove it from our list of unvisited vertices. Do the following
+        # until no vertices are unvisited:
             for v in finalpath:
                 distdict = {}
-
+        # Construct dictionaries for each vertex in our final path using the distance between said vertec
+        # and every other vertex in the graph.
                 for w in GraphVertices:
                     if w not in finalpath:
                         distdict[w] = GraphObj.GetDistance(v, w, False)
                     
                 vertexdistances.append(distdict)
-                SortedDistances = dict(sorted(distdict.items(), key=lambda item: item[1]))
-
-                closestvert = min(SortedDistances, key=SortedDistances.get)
+        # Take the vertex which is closest to any vertex in our "final path" and add it to our path.
+        # Remove it from the list of unvisited vertices
+                closestvert = min(distdict, key=distdict.get)
                 closestvertdict[closestvert] = distdict[closestvert]
 
-            mindist = min(closestvertdict, key=SortedDistances.get)
-            print(vertexdistances, mindist)
-            UnvisitedVertices.pop(0)
+            mindist = min(closestvertdict, key=distdict.get)
 
+            UnvisitedVertices.remove(mindist)
+            finalpath.append(mindist)
 
-    
+    if CycleBool == True:
+        finalpath.append(StartVertName)
+
     return finalpath
 
-test()
+
+smallgraphverts = ["α", "β", "γ", "δ", "ε", "ζ"]
+mediumgraphverts = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
+largegraphverts = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"]
+I1small = itertest("Nearest Neighbor", smallgraphverts, "A", 10, True)
+I2small = itertest("Nearest Insertion", smallgraphverts, "A", 10, True)
+#testreport(I1small, "Nearest Neighbor")
+#testreport(I2small, "Nearest Insertion")
+algotest(mediumgraphverts, mediumgraphverts[0], True)
