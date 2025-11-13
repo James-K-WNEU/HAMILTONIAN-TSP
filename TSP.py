@@ -140,11 +140,13 @@ class TSPGraph:
             CVPos = V.GetPosition()
             if CVPos[0] == VertX and CVPos[1] == VertY:
                 FoundVert = V
-            
-        if FoundVert != None:
-            print ("Found vertex", FoundVert.GetName(), "with position", (VertX, VertY))
 
         return FoundVert
+    
+    def Clear(self):
+        # Remove all existing vertices from the graph.
+        for v in self.vertices:
+            self.vertices.remove(v)
     
     def PositionOccupied(self, VertX, VertY):
         # Returns whether or not an (x, y) position in the graph is occupied by a vertex.
@@ -393,7 +395,7 @@ def DrawGraph(GraphObj, ShowEdges, ShowVertPos):
 
 def TracePath(GraphObj, VertNamesList, PathName, ShowVertPos, ShowAllEdges, ShowPathWeight, PathColor):
     # Draw the graph, then draw the graph specified in the "VertNamesList" array.
-    PossibleColors = ["blue", "red", "green", "orange", "purple", "cyan"]
+    PossibleColors = ["blue", "red", "green", "orange", "purple"]
     VertexPosDict = ConvertVertexPos(GraphObj)
     GraphBounds = GraphObj.GetBounds()
     VertexSize = 100/GraphBounds
@@ -469,7 +471,7 @@ def TracePaths(GraphObj, PathDict, ShowVertPos, ShowAllEdges, ShowPathWeight):
     # Each key is the name of the path and each key is the array which defines the order in which vertices
     # are visited.
     UndrawnPaths = list(PathDict.keys())
-    PossibleColors = ["blue", "red", "green", "orange", "purple", "cyan"]
+    PossibleColors = ["blue", "red", "green", "orange", "purple"]
     VertexPosDict = ConvertVertexPos(GraphObj)
     GraphBounds = GraphObj.GetBounds()
     VertexSize = 100/GraphBounds
