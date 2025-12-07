@@ -201,7 +201,7 @@ class TSPGraph:
         FoundVert = self.GetVertex(NewVertPos[0], NewVertPos[1])
         FoundVertPos = self.GetVertexPosition(NewVert)
         if FoundVert != None or FoundVertPos != (None, None):
-            print("There is already a vertex in graph", self.name, "with position", NewVertPos, "or name", NewVert.GetName())
+            print("There is already a vertex in graph",self.name,"with position",NewVertPos,"or name",NewVert.GetName())
 
         if FoundVert == None and FoundVertPos == (None, None):
             NewVert.SetParentGraph(self)
@@ -303,6 +303,103 @@ class TSPGraph:
         print("Generated subgraph", subgraphname, "of graph", self.GetName())
         return newGraph
 
+#   #   #   #   #   #   #   #   #   #
+
+class MinSpanningTree(TSPGraph):
+    # Class used to represent the minimum spanning tree for a weighted graph.
+    # This class is read-only and only to be used with algorithms such as 
+    # Christofides' heuristic.
+
+    # Unlike the TSP graph, we do not assume all vertices are adjacent, so we store
+    # the edges in an array. In this dictionary, each edge is a triple (A, B, d), where
+    # A and B are the vertices which comprise the edge and d is the edge weight.
+
+    def __init__(self, GraphObj, startvertname, TreeName):
+        super().__init__(0, TreeName)
+        self.parentgraph = GraphObj
+        self.rootvertname = startvertname
+        self.edges = []
+
+    def GetGraph(self):
+        return self.parentgraph
+    
+    def GetVertices(self):
+        return self.vertices
+    
+    def GetVertexNames(self):
+        nameslist = []
+        for v in self.vertices:
+            if v.GetName() != None:
+                nameslist.append(v.GetName())
+
+        return nameslist
+    
+    def GetRootVertName(self):
+        return self.rootvertname
+    
+    def GetRootVert(self):
+        root = None
+        if self.parentgraph.SearchByName(self.rootvertname) != None:
+            root = self.parentgraph.SearchByName(self.rootvertname)
+
+        return root
+    
+    def GetBounds(self):
+        return self.bounds
+    
+    def GetName(self):
+        return self.name
+    
+    def GetEdges(self):
+        return self.edges
+    
+    def GetNamedEdges(self):
+        NamedEdgeDict = []
+        for E in self.edges:
+            EdgeTuple = (E[0].GetName(), E[1].GetName(), E[2])
+            NamedEdgeDict.append(EdgeTuple)
+
+        return NamedEdgeDict
+    
+    def GenerateMinTree(self):
+        rootvert = self.GetRootVert()
+        graph = self.parentgraph
+
+        def CheckVerts(parentgraphverts):
+            fullbool = True
+            for v in parentgraphverts:
+                if v not in self.vertices:
+                    fullbool = False
+                
+            return fullbool
+
+
+        if graph != None and isinstance(graph, TSPGraph) == True:
+            if rootvert != None and isinstance(rootvert, TSPVertex) == True:
+                # check to see if the inputs are valid
+                graphverts = graph.GetVertices()
+                self.vertices.append(rootvert)
+                # add the root to the set of vertices of the tree
+                self.bounds = graph.GetBounds()
+                while CheckVerts(graphverts) == False:
+                    mindistedge = (None, None, 99999999)
+                    for u in self.vertices:
+
+                        for v in graphverts:
+                            if v not in self.vertices:
+                                Dist = u.GetDistance(v, False)
+                                CandEdge = (u, v, Dist)
+                                if Dist < mindistedge[2]:
+                                    mindistedge = CandEdge
+
+
+                    if mindistedge[1] not in self.vertices:
+                        self.edges.append(mindistedge)
+                        self.vertices.append(mindistedge[1])
+
+                print("Generated minimum spanning tree.")
+#   #   #   #   #   #   #   #   #   #
+
 def ConvertVertexPos(GraphObj):
         # Create a dictionary of modified vertex positions to be used when drawing
         # graphs.
@@ -390,6 +487,52 @@ def DrawGraph(GraphObj, ShowEdges, ShowVertPos):
                 DrawComplete.append(E)
                     
     print("Finished drawing graph.")
+
+    return MyScreen
+
+def DrawMinTree(GraphObj, MinTree, ShowAllEdges, ShowVertPos, PathColor):
+    # Draw the graph, then draw the graph specified in the "VertNamesList" array.
+    PossibleColors = ["blue", "red", "green", "orange", "purple"]
+    VertexPosDict = ConvertVertexPos(GraphObj)
+    GraphBounds = GraphObj.GetBounds()
+    VertexSize = 100/GraphBounds
+    EdgeSet = MinTree.GetEdges()
+
+    MyScreen = DrawGraph(GraphObj, ShowAllEdges, ShowVertPos)
+    MyScreen.title(GraphObj.GetName())
+
+    Cursor = turtle.Turtle()
+    Cursor.penup()
+    Cursor.pensize(math.floor(1+(VertexSize/10)))
+    if str(PathColor).lower() in PossibleColors:
+        Cursor.color(PathColor)
+    else:
+        Cursor.color("blue")
+
+    Cursor.hideturtle()
+
+    CurrentVert = None
+    PreviousVert = None
+
+    for E in EdgeSet:
+        StartVert = E[0].GetName()
+        StartPos = VertexPosDict[StartVert]
+        DestVertName = E[1].GetName()
+        DestVertPos = VertexPosDict[DestVertName]
+
+        Cursor.goto(DestVertPos)
+        Cursor.penup()
+        Cursor.goto(StartPos)
+        Cursor.pendown()
+
+    Cursor.penup()
+    print("Finished drawing tree.")
+
+    Cursor.goto(-325, -275)
+    Cursor.pendown()
+    Cursor.write("Click anywhere in the window to exit", ("Arial", "left", 18, "bold"))
+    Cursor.penup()
+    MyScreen.exitonclick()
 
     return MyScreen
 
