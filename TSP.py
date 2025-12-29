@@ -3,7 +3,7 @@ import turtle
 import random
 import time
 
-# This file contains the classes for Travelling Salesman graphs (TSP graphs) and their vertices.
+# This file contains the classes for Travelling Salesman graphs (TSP graphs), their vertices, and other types of weighted graphs.
 # It also contains methods for drawing TSP graphs using the turtle module.
 
 class TSPVertex:
@@ -304,6 +304,16 @@ class TSPGraph:
         return newGraph
 
 #   #   #   #   #   #   #   #   #   #
+
+class TSPSubgraph(TSPGraph):
+    def __init__(self, parentgraph, subname):
+        super().__init__(parentgraph.GetBounds(), parentgraph.GetName())
+        self.name = subname
+
+#	#	#	#	#	#	#	#	#	#
+
+
+#	#	#	#	#	#	#	#	#	#
 
 class MinSpanningTree(TSPGraph):
     # Class used to represent the minimum spanning tree for a weighted graph.
