@@ -290,5 +290,5 @@ def GenMinTree(GraphObj, StartVertName, drawtree):
 #I2small = itertest("Nearest Insertion", smallgraphverts, "A", 10, True)
 #testreport(I1small, "Nearest Neighbor")
 #testreport(I2small, "Nearest Insertion")
-#algotest(mediumgraphverts, "A", False)
-print(singletest("ni", RandomGraph(smallgraphverts), "ε", True))
+algotest(mediumgraphverts, "A", False)
+#print(singletest("ni", RandomGraph(smallgraphverts), "ε", True))
