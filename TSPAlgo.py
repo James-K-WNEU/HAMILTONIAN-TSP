@@ -1,9 +1,11 @@
+# James P. Kumpulanian ~ 2025
+
 import math
 import turtle
 import random
 import TSP
+import ParseTSP
 import itertools
-import time
 
 smallgraphverts = ["α", "β", "γ", "δ", "ε", "ζ"]
 mediumgraphverts = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
