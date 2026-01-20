@@ -1,3 +1,5 @@
+# James P. Kumpulanian ~ 2025
+
 import math
 import turtle
 import random
@@ -175,7 +177,6 @@ class TSPGraph:
                 FoundVert = V
 
         return FoundVert
-
     
     def GenerateVertex(self,  NewName, VertX, VertY,):
         # Create a new vertex in the graph with the specified parameters if such a vertex does not already exist.
