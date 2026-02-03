@@ -160,11 +160,11 @@ class TSPGraph:
         if VertInPos != None:
             return True
     
-    def GetVertexPosition(self, Vert):
+    def GetVertexPosition(self, VertName):
         # Search the graph for a specific vertex. If found, return its position.
         FoundVertPos = (None, None)
         for V in self.vertices:
-            if V == Vert:
+            if V == VertName:
                 FoundVertPos = V.GetPosition()
 
         return FoundVertPos
