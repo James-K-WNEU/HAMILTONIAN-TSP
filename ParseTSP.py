@@ -53,6 +53,10 @@ def ParseTSPFile(path):
                 if delim not in s and s != "":
                     tupleparts.append(s)
 
+            tupleparts[1] = float(tupleparts[1])
+            tupleparts[2] = float(tupleparts[2])
+            
+
             tuplelist.append(tuple(tupleparts))
     else:
         print("File not found or could not be read.")
@@ -60,16 +64,40 @@ def ParseTSPFile(path):
     return tuplelist
 
 def GenFromFile(filepath, graphname):
+    # Parses data from a .TSP file. If successful, the data is used to generate
+    # a TSP graph with corresponding bounds, vertex positions, and vertex names.
+
     CanRead = FileReadTest(filepath)
+    upperbound = 0
+    newgraph = None
 
     if CanRead == True:
         filedata = ParseTSPFile(filepath)
-        sortedtuples = max(filedata)
-        print(sortedtuples)
+        for f in filedata:
+            if f[1] > upperbound:
+                upperbound = f[1]
+            if f[2] > upperbound:
+                upperbound = f[2]
+            
+        newgraph = TSP.TSPGraph(upperbound, graphname)
+        for f in filedata:
+            newgraph.GenerateVertex(f[0], f[1], f[2])
 
+    if CanRead == False:
+        print("File data could not be parsed or is in the wrong format.")
+            
+    return newgraph
 
-print(FileReadTest("berlin52.tsp"))
-print(FileReadTest("usa13509.tsp"))
-print(FileReadTest("poopfart.txt"))
+def test():
+    print("Running tests...")
+    FileRead = FileReadTest("berlin52.tsp")
+    if FileRead == True:
+        print("Successfully read data.")
+        FileData = ParseTSPFile("berlin52.tsp")
+        BerlinGraph = GenFromFile("berlin52.tsp", "berlin")
+        BerlinVerts = BerlinGraph.VertexDict()
 
-print(GenFromFile("berlin52.tsp", "berlin"))
+        if BerlinVerts["1"] == (FileData[0][1], FileData[0][2]):
+            print("File data transcribed correctly.")
+
+#test()
