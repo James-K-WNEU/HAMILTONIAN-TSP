@@ -13,12 +13,13 @@ largegraphverts = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"
 
 def singletest(algoname, GraphObj, StartVertName, CycleBool):
     # Method intended to test the accuracy/reliability of TSP algorithms and heuristics.
-
+    print("Running test. Please wait.")
     BFP = BruteForce(GraphObj, StartVertName, CycleBool)
     BFPCost  = GraphObj.PathWeight(BFP, False)
     AlgoP = None
     AlgoCost = 0
     resultdouble = (None, None)
+    
 
     # Run the specified algorithm and compare the total cost of the path it generates to 
     # the "optimal" path found via brute force for the given graph.
@@ -36,9 +37,12 @@ def singletest(algoname, GraphObj, StartVertName, CycleBool):
         AlgoP = NearestInsert(GraphObj, StartVertName, CycleBool)
         AlgoCost = GraphObj.PathWeight(AlgoP, False)
     
+    
     if BFPCost == AlgoCost:
+        print("Finished running test. The chosen algorithm produced an optimal solution.")
         resultdouble = (True, 0.0)
     else:
+        print("Finished running test. The chosen algorithm did not produce an optimal solution.")
         resultdouble = (False, AlgoCost - BFPCost)
 
     return resultdouble
@@ -292,5 +296,6 @@ def GenMinTree(GraphObj, StartVertName, drawtree):
 #I2small = itertest("Nearest Insertion", smallgraphverts, "A", 10, True)
 #testreport(I1small, "Nearest Neighbor")
 #testreport(I2small, "Nearest Insertion")
-algotest(mediumgraphverts, "A", False)
-#print(singletest("ni", RandomGraph(smallgraphverts), "ε", True))
+#algotest(mediumgraphverts, "A", False)
+print(singletest("nn", ParseTSP.GenFromFile("burma14.tsp", "burma"), "1", True))
+NearestInsert(ParseTSP.GenFromFile("burma14.tsp", "burma"), "1", "False")
