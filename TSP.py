@@ -95,6 +95,13 @@ class TSPGraph:
     def GetName(self):
         return self.name
     
+    def NumVertices(self):
+        VertexNum = 0
+        for V in self.vertices:
+            VertexNum += 1
+
+        return VertexNum
+    
     def GetVertexNames(self):
         VertexNames = []
         for V in self.vertices:
@@ -187,7 +194,7 @@ class TSPGraph:
         if FoundVert == None:
             if 0 <= VertX and VertX < self.bound and 0 <= VertY and VertY < self.bound:
                 NewVert = TSPVertex(NewName)
-                NewVert.SetPosition(math.floor(VertX), math.floor(VertY))
+                NewVert.SetPosition((VertX), (VertY))
                 NewVert.SetParentGraph(self)
                 self.vertices.append(NewVert)
             else:
