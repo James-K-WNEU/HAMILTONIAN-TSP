@@ -23,7 +23,7 @@ def FileReadTest(path):
                 if "node_coord_section" in contents.lower():
                     CorrectFormat = True
                 else:
-                    print(print("File is not in the correct format."))
+                    print("File is not in the correct format.")
         else:
             print("File is not a .tsp file.")
         
@@ -131,4 +131,5 @@ def test(filename):
 test("C:/Users/My Laptop/Documents/PythonProjects/GraphStuff/tsplib-master/usa13509.tsp")
 test("C:/Users/My Laptop/Documents/PythonProjects/GraphStuff/tsplib-master/vm1748.tsp")
 test("C:/Users/My Laptop/Documents/PythonProjects/GraphStuff/tsplib-master/ulysses16.tsp")
+
 test("C:/Users/My Laptop/Documents/PythonProjects/GraphStuff/tsplib-master/swiss42.tsp")
