@@ -1,4 +1,4 @@
-# James P. Kumpulanian ~ 2025
+# James P. Kumpulanian ~ 2025 @James-K-WNEU
 
 import math
 import turtle
@@ -183,6 +183,75 @@ def BruteForce(GraphObj, StartVertName, CycleBool):
 
     return finalpath
 
+def Genetic(GraphObj, StartVertName, CycleBool, MaxCycle):
+    # Implementation of a basic genetic algorithm for solving TSP
+    # Generates an initial "chromosome" which is just the list of the graph's vertices
+    # For each iteration in MaxCycle, generate mutations using Mutate(), evaluate
+    # each mutation's fitness using FitEval(), and select the most fit mutations via
+    # the Select() function. 
+
+    def Mutate(pathlist, mutnum):
+        # For each P in pathlist we generate M = mutnum mutations, so a total
+        # of PxM mutations will be generated
+
+        outputlist = []
+        for p in pathlist:
+            # We mutate a path by swapping the position of two random vertices in the path.
+            # For example, if we have a path {a, b, c, d, e} and mutnum = 2, we will get 2 paths 
+            # which are mutations of the original: maybe {a, b, d, c, e} and {a, b, c, e, d}
+            plen = len(p)
+            mutset = []
+            for i in range(0, mutnum):
+                
+                mutpath = p
+                SwapIndA = None
+                SwapIndB = None
+                
+                while SwapIndA == SwapIndB:
+                    SwapIndA = random.randint(0, plen-1)
+                    SwapIndB = random.randint(0, plen-1)
+
+                SwapElementA = mutpath[SwapIndA]
+                SwapElementB = mutpath[SwapIndB]
+                mutpath[SwapIndA] = SwapElementB
+                mutpath[SwapIndB] = SwapElementA
+                SwapIndA = None
+                SwapIndB = None
+                print(mutpath)
+
+        
+        return outputlist
+    
+    def FitEval(path):
+        # Evaluate the total weight for the given path. Then, return a double consisting of
+        # the path itself and the path weight. For the sake of keeping things simple, our
+        # only measure of fit will be the path weight.
+
+        outputdoub = (path, GraphObj.PathWeight(path, False))
+
+        return outputdoub
+    
+    def Select(doublist, selnum):
+        # sort each of the doubles based on path weight in ascended order, then select the paths
+        # from index 0 to index N = selum - 1. That way, we select the N "best" paths to proceed with.
+        selected = []
+
+        return selected
+
+    Gen = 0
+    GenOptimality = 0 
+    numverts = GraphObj.NumVertices()
+    print(numverts)
+    starterpath = []
+
+    if GraphObj.NameInGraph(StartVertName) == True:
+        starterpath = GraphObj.GetVertexNames()
+        
+        mutations = Mutate([starterpath], numverts)
+        print(mutations)
+            
+
+
 def NearestNeighbor(GraphObj, StartVertName, CycleBool):
     # Implementation of the "nearest neighbor" algorithm as described in Rosenkratz's paper.
     # Easy to implement and relatively fast, but doesn't always produce an optimal solution.
@@ -291,11 +360,12 @@ def GenMinTree(GraphObj, StartVertName, drawtree):
 
 
 #RandomSmall = RandomGraph(smallgraphverts)
-#RandomMid = RandomGraph(mediumgraphverts)
+RandomMid = RandomGraph(mediumgraphverts)
+Genetic(RandomMid, "A", True, 10)
 #I1small = itertest("Nearest Neighbor", smallgraphverts, "A", 10, True)
 #I2small = itertest("Nearest Insertion", smallgraphverts, "A", 10, True)
 #testreport(I1small, "Nearest Neighbor")
 #testreport(I2small, "Nearest Insertion")
 #algotest(mediumgraphverts, "A", False)
-print(singletest("nn", ParseTSP.GenFromFile("burma14.tsp", "burma"), "1", True))
-NearestInsert(ParseTSP.GenFromFile("burma14.tsp", "burma"), "1", "False")
+#print(singletest("nn", ParseTSP.GenFromFile("burma14.tsp", "burma"), "1", True))
+#NearestInsert(ParseTSP.GenFromFile("burma14.tsp", "burma"), "1", "False")
