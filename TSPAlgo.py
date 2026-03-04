@@ -12,7 +12,7 @@ smallgraphverts = ["α", "β", "γ", "δ", "ε", "ζ"]
 mediumgraphverts = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
 largegraphverts = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"]
 
-def singletest(algoname, GraphObj, StartVertName, CycleBool):
+def singletest(algoname, GraphObj, StartVertName, CycleBool, CompTimeRound):
     # Method intended to test the accuracy/reliability of TSP algorithms and heuristics.
     print("Running test. Please wait. \n")
     #BFP = BruteForce(GraphObj, StartVertName, CycleBool)
@@ -40,8 +40,20 @@ def singletest(algoname, GraphObj, StartVertName, CycleBool):
         AlgoP = NearestInsert(GraphObj, StartVertName, CycleBool)
         endtime = time.perf_counter()
         AlgoCost = GraphObj.PathWeight(AlgoP, False)
+
+    if str(algoname).lower() == "bf" or str(algoname).lower() == "brute-force":
+        HeuristicUsed= "Brute Force"
+        starttime = time.perf_counter()
+        AlgoP = BruteForce(GraphObj, StartVertName, CycleBool)
+        endtime = time.perf_counter()
+        AlgoCost = GraphObj.PathWeight(AlgoP, False)
     
     elapsedtime = endtime-starttime
+
+    if CompTimeRound > 0:
+        # if N = CompTimeRound is greater than zero, round elapsedtime to the Nth decimal place
+        elapsedtime = round(elapsedtime, CompTimeRound)
+
     print("Heuristic used:", HeuristicUsed)
     print("Name of graph:", GraphObj.GetName())
     print("Heuristic answer computed in", elapsedtime, "seconds.")
@@ -365,18 +377,27 @@ def timertest(GraphObj, StartVertName, CycleBool):
     elapsedtime = end-start
     return elapsedtime
 
-#RandomSmall = RandomGraph(smallgraphverts)
-#RandomMid = RandomGraph(mediumgraphverts)
-#Genetic(RandomMid, "A", True, 10)
-#I1small = itertest("Nearest Neighbor", smallgraphverts, "A", 10, True)
-#I2small = itertest("Nearest Insertion", smallgraphverts, "A", 10, True)
-#testreport(I1small, "Nearest Neighbor")
-#testreport(I2small, "Nearest Insertion")
-#algotest(mediumgraphverts, "A", False)
-#print(singletest("nn", ParseTSP.GenFromFile("burma14.tsp", "burma"), "1", True))
-ST = ParseTSP.GenFromFile("C:/Users/My Laptop/Documents/PythonProjects/GraphStuff/tsplib-master/st70.tsp", "ST")
-print(NearestNeighbor(ST, "1", "False"))
+
+berlin52 = ParseTSP.GenFromFile("D:/tsplib-master/Berlin52.tsp", "berlin52")
+burma14 = ParseTSP.GenFromFile("D:/tsplib-master/burma14.tsp", "burma14")
+bier127 = ParseTSP.GenFromFile("D:/tsplib-master/bier127.tsp", "bier127")
+ch130 = ParseTSP.GenFromFile("D:/tsplib-master/ch130.tsp", "ch130")
+d198 = ParseTSP.GenFromFile("D:/tsplib-master/d198.tsp", "d198")
+eil51 = ParseTSP.GenFromFile("D:/tsplib-master/eil51.tsp", "eil51")
+lin105 = ParseTSP.GenFromFile("D:/tsplib-master/lin105.tsp", "lin105")
+pr76 = ParseTSP.GenFromFile("D:/tsplib-master/pr76.tsp", "pr76")
+rd100 = ParseTSP.GenFromFile("D:/tsplib-master/rd100.tsp", "rd100")
+rat99 = ParseTSP.GenFromFile("D:/tsplib-master/rat99.tsp", "rat99")
+st70 = ParseTSP.GenFromFile("D:/tsplib-master/st70.tsp", "st70")
+ulysses16 = ParseTSP.GenFromFile("D:/tsplib-master/ulysses16.tsp", "ulysses16")
+#usa13509 = ParseTSP.GenFromFile("D:/tsplib-master/usa13509.tsp", "usa13509")
+
+testarray = [berlin52, burma14, bier127, ch130, d198, eil51, lin105, pr76, rd100, rat99, st70, ulysses16]
+
+for t in testarray:
+    singletest("ni", t, "1", "False", 8)
+
 #print(ST.PathWeight(NearestNeighbor(ST, "1", "False"), False))
-#print(timertest(ST, "1", "False"))
-singletest("nn", ST, "1", "False")
-singletest("ni", ST, "1", "False")
+#print(timertest(ST, "1", "False", 0))
+#singletest("nn", ST70, "1", "False", 0)
+#singletest("ni", ST70, "1", "False", 0)
