@@ -69,8 +69,6 @@ class TSPVertex:
             else:
                 Distance = RealDist
 
-            
-        
         else:
             print("Vertices " + self.name + " and ", OtherVert.GetName() + " are not in the same graph.")
 
@@ -240,6 +238,24 @@ class TSPGraph:
         
         return VertDist
     
+    def GetEdges(self):
+        # Return a list of all edges in the graph 
+        # If the distance between two vertices is not a null value or zero,
+        # then the vertices are adjacent.
+        EdgeList = []
+
+        for X in self.vertices:
+            for Y in self.vertices:
+                if X != Y:
+                    XName = X.GetName()
+                    YName = Y.GetName()
+                    if (XName, YName) not in EdgeList and (YName, XName) not in EdgeList:
+                        VertDist = X.GetDistance(Y, False)
+                        if VertDist != None and VertDist != 0:
+                            EdgeList.append((XName, YName))
+                    
+        return (EdgeList)
+
     def PopulateRandom(self, NameSet):
         # Populate the graph with random vertices with names drawn from the NameSet.
         if len(NameSet) > 0:
