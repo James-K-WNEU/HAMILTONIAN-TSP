@@ -127,9 +127,3 @@ def test(filename):
 
     if CorrectTrans == True and ReadFile == True:
         print("All tests successful for", str(filename),"\n")
-
-test("C:/Users/My Laptop/Documents/PythonProjects/GraphStuff/tsplib-master/usa13509.tsp")
-test("C:/Users/My Laptop/Documents/PythonProjects/GraphStuff/tsplib-master/vm1748.tsp")
-test("C:/Users/My Laptop/Documents/PythonProjects/GraphStuff/tsplib-master/ulysses16.tsp")
-
-test("C:/Users/My Laptop/Documents/PythonProjects/GraphStuff/tsplib-master/swiss42.tsp")
