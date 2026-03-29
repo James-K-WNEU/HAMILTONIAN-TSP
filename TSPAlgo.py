@@ -61,70 +61,6 @@ def singletest(algoname, GraphObj, StartVertName, CycleBool, CompTimeRound):
 
     return (GraphObj.GetName(), elapsedtime, AlgoCost)
 
-
-def itertest(algoname, VertNameList, StartVertName, iter, CycleBool):
-    # Method intended to test the accuracy/reliability of TSP algorithms and heuristics iteratively.
-    # By the Law of Large Numbers, the success rate will more closely reflect how accurate the algorithm
-    # is the larger "iter" is. 
-
-    # Run the algorithm specified "iter" times using randomly generated graphs.
-    # Each time we run the algorithm, get the cost of the path/cycle it generates
-    # and compare it to the "brute force" result. We assume the brute force algorithm
-    # will always produce an optimal result for any given graph. 
-
-    successnum = 0
-    successrat = 0
-    successperc = 0
-
-    for i in range(0, iter):
-        GraphName = "Graph " + str(i)
-        G = TSP.TSPGraph(10, GraphName)
-        G.Clear()
-        G.PopulateRandom(VertNameList)
-
-        trial = singletest(algoname, G, StartVertName, CycleBool)
-        
-    # If the resulting algorithm produces a path of equal cost equal to optimal result, we consider it
-    # a "success" and increment the "success" counter by 1. Otherwise, we consider it a 
-    # "failure" and do not increment. We can use this to get a rough idea of how "accurate"
-    # the given heuristic is in terms of getting us an optimal solution.
-
-        if trial[0] == True:
-            successnum +=1
-    
-    successrat = successnum/iter
-    successperc = successrat*100
-
-    return(successnum, successrat, successperc, iter)
-
-def testreport(testtuple, testname):
-    # print the results of an itertest trial to the screen. 
-    # takes the tuple (successnum, successrate, sucessperc, numtestsran) as input.
-
-    if testtuple != None and len(testtuple) == 4 and testname != None:
-        successnum = testtuple[0]
-        successrate = testtuple[1]
-        successperc = testtuple[2]
-        numtests = testtuple[3]
-
-        print("\n Tests results for ", testname, ":")
-
-        if numtests != None:
-            print("Number of tests ran: ", numtests)
-
-        if successnum != None:
-            print("Number of successful outcomes: ", successnum)
-
-        if successrate != None:
-            print("Success rate: ", successrate)
-
-        if successperc != None:
-            print("Success percentage: ", successperc)
-
-        if numtests != None and successnum != None:
-            print("Success ratio: ", successnum, "/", numtests)
-
-
 def algotest(graphvertices, startvert, cyclebool):
     # Method intended to test if each algorithm is working properly.
 
@@ -370,32 +306,125 @@ def GenMinTree(GraphObj, StartVertName, drawtree):
         
     return MinTree
 
-def timertest(GraphObj, StartVertName, CycleBool):
-    start = time.perf_counter()
-    NearestInsert(GraphObj, StartVertName, CycleBool)
-    end = time.perf_counter()
-    elapsedtime = end-start
-    return elapsedtime
+def TwoOpt(GraphObj, StartVertName, CycleBool, StartCond, NaiveBool):
+    # Start with an arbitary path through the graph. Then, for every two unique pairings of vertices,
+    # consider the cost of "swapping" edges between them. If the cost of this "swapping"
+    # results in less costly path, change the order of the vertices to reflect new arrangement.
 
+    finalpath = []
+    workingpath = []
+    workingpathcost = 0
 
-berlin52 = ParseTSP.GenFromFile("D:/tsplib-master/Berlin52.tsp", "berlin52")
-burma14 = ParseTSP.GenFromFile("D:/tsplib-master/burma14.tsp", "burma14")
-bier127 = ParseTSP.GenFromFile("D:/tsplib-master/bier127.tsp", "bier127")
-ch130 = ParseTSP.GenFromFile("D:/tsplib-master/ch130.tsp", "ch130")
-d198 = ParseTSP.GenFromFile("D:/tsplib-master/d198.tsp", "d198")
-eil51 = ParseTSP.GenFromFile("D:/tsplib-master/eil51.tsp", "eil51")
-lin105 = ParseTSP.GenFromFile("D:/tsplib-master/lin105.tsp", "lin105")
-pr76 = ParseTSP.GenFromFile("D:/tsplib-master/pr76.tsp", "pr76")
-rd100 = ParseTSP.GenFromFile("D:/tsplib-master/rd100.tsp", "rd100")
-rat99 = ParseTSP.GenFromFile("D:/tsplib-master/rat99.tsp", "rat99")
-st70 = ParseTSP.GenFromFile("D:/tsplib-master/st70.tsp", "st70")
-ulysses16 = ParseTSP.GenFromFile("D:/tsplib-master/ulysses16.tsp", "ulysses16")
+    def PathSwap(originallist, swapA, swapB):
+        # Swap element "swapA" in the given list with element "swapB"
+        newpath = originallist.copy()
+        AInd = originallist.index(swapA)
+        BInd = originallist.index(swapB)
+        newpath[AInd], newpath[BInd] = newpath[BInd], newpath[AInd]
+        return newpath
+            
+
+    GraphVertices = GraphObj.GetVertexNames()
+    
+    # Start by generating an arbitary path through the graph.
+    # If StartCond = 1, then this will be computed by the nearest neighbor algorithm.
+    # If StartCond = 2, then this will be computed by nearest insertion algorithm.
+    if StartCond == 1:
+        workingpath = NearestNeighbor(GraphObj, StartVertName, CycleBool)
+    if StartCond == 2:
+        workingpath = NearestInsert(GraphObj, StartVertName, CycleBool)
+    else:
+        workingpath = GraphVertices
+
+    # Get the total cost of this initial path.
+    workingpathcost = GraphObj.PathWeight(workingpath, False)
+    #print("Initial path:", workingpath, "with cost", workingpathcost)
+
+    # Consider every unique pairing of verticies with those in our initial path
+    # We do this by changing the ordering of vertices in our workingpath list. 
+    # We only check disjoint edges (edges which do not share a vertex)
+    for i in range (1, len(workingpath)):
+        CurrentA = workingpath[i-1]
+        CurrentB = workingpath[i]
+        workingpathcost = GraphObj.PathWeight(workingpath, False)
+
+        for j in range (1, len(workingpath)):
+            CurrentC = GraphVertices[j-1]
+            CurrentD = GraphVertices[j]
+            # Check to make sure the edges are disjoint
+            if CurrentA not in [CurrentC, CurrentD] and CurrentB not in [CurrentC, CurrentD]:
+                # Check the costs of the swapped paths. Pick the lowest one among these,
+                # then swap the edges.
+                inprogpath = workingpath.copy()
+                MinCostPath = None
+                UnSwappedPath = [CurrentA, CurrentB, CurrentC, CurrentD]
+                UnSwappedPathCost = GraphObj.PathWeight(UnSwappedPath, False)
+                # Swap the second and third elements
+                SwappedPath1 = [CurrentA, CurrentC, CurrentB, CurrentD]
+                SwappedPath1Cost = GraphObj.PathWeight(SwappedPath1, False)
+                # Swap the second and last elements
+                SwappedPath2 = [CurrentA, CurrentD, CurrentC, CurrentB]
+                SwappedPath2Cost = GraphObj.PathWeight(SwappedPath2, False)
+
+                if SwappedPath1Cost <= UnSwappedPathCost and SwappedPath1Cost <= SwappedPath2Cost:
+                    MinCostPath = SwappedPath1
+                if SwappedPath2Cost <= UnSwappedPathCost and SwappedPath2Cost <= SwappedPath1Cost:
+                    MinCostPath = SwappedPath2
+                else:
+                    MinCostPath = UnSwappedPath
+
+                
+                if MinCostPath != None and MinCostPath != UnSwappedPath:
+                    # if a lower-cost arrangement is found, perform the neccessary swap
+                    # operations.
+                    print(UnSwappedPath, "=>" , MinCostPath)
+                    if SwappedPath1 == MinCostPath:
+                        inprogpath = PathSwap(workingpath, MinCostPath[1], MinCostPath[2])
+                    if SwappedPath2 == MinCostPath:
+                        inprogpath = PathSwap(workingpath, MinCostPath[1], MinCostPath[3])
+                    
+                    #print(inprogpath, GraphObj.PathWeight(inprogpath, False))
+
+                    # If NaiveBool != True, only change the workingpath if the entire path with
+                    # the swapped vertices has a lower overall cost than the current working path.
+                    if NaiveBool == True:
+                        workingpath = inprogpath
+                    if NaiveBool != True and GraphObj.PathWeight(inprogpath, False) < workingpathcost:
+                        workingpath = inprogpath
+
+        # update finalpath
+        finalpath = workingpath
+
+    if CycleBool == True:
+        finalpath.append(StartVertName)
+
+    #print("Final 2-opt path:", finalpath, "with cost", GraphObj.PathWeight(finalpath, False))
+
+    return finalpath
+
+# test
+RandMed = RandomGraph(mediumgraphverts)
+#TwoOpt(RandMed, "A", False, 1, False)
+#TwoOpt(RandMed, "A", False, 2, False)
+
+#berlin52 = ParseTSP.GenFromFile("D:/tsplib-master/Berlin52.tsp", "berlin52")
+#burma14 = ParseTSP.GenFromFile("D:/tsplib-master/burma14.tsp", "burma14")
+#bier127 = ParseTSP.GenFromFile("D:/tsplib-master/bier127.tsp", "bier127")
+#ch130 = ParseTSP.GenFromFile("D:/tsplib-master/ch130.tsp", "ch130")
+#d198 = ParseTSP.GenFromFile("D:/tsplib-master/d198.tsp", "d198")
+#eil51 = ParseTSP.GenFromFile("D:/tsplib-master/eil51.tsp", "eil51")
+#lin105 = ParseTSP.GenFromFile("D:/tsplib-master/lin105.tsp", "lin105")
+#pr76 = ParseTSP.GenFromFile("D:/tsplib-master/pr76.tsp", "pr76")
+#rd100 = ParseTSP.GenFromFile("D:/tsplib-master/rd100.tsp", "rd100")
+#rat99 = ParseTSP.GenFromFile("D:/tsplib-master/rat99.tsp", "rat99")
+#st70 = ParseTSP.GenFromFile("D:/tsplib-master/st70.tsp", "st70")
+#ulysses16 = ParseTSP.GenFromFile("D:/tsplib-master/ulysses16.tsp", "ulysses16")
 #usa13509 = ParseTSP.GenFromFile("D:/tsplib-master/usa13509.tsp", "usa13509")
 
-testarray = [berlin52, burma14, bier127, ch130, d198, eil51, lin105, pr76, rd100, rat99, st70, ulysses16]
+#testarray = [berlin52, burma14, bier127, ch130, d198, eil51, lin105, pr76, rd100, rat99, st70, ulysses16]
 
-for t in testarray:
-    singletest("ni", t, "1", "False", 8)
+#for t in testarray:
+#   singletest("ni", t, "1", "False", 8)
 
 #print(ST.PathWeight(NearestNeighbor(ST, "1", "False"), False))
 #print(timertest(ST, "1", "False", 0))
