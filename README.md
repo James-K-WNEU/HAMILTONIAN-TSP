@@ -3,7 +3,7 @@ This repository contains code relating to my research on the Hamiltonian path, t
 It contains functions for generating and visualizing weighted graphs, finding Hamiltonian paths in those graphs, and comparing different
 heuristics and algorithms on measures such as factor of optimality and time-complexity.
 
-Sample instances come from this repository of TSP instances maintained by the University of Heidelberg: https://github.com/mastqe/tsplib/tree/master. 
+Sample instances come from this repository of TSP instances maintained by the University of Heidelberg: https://github.com/mastqe/tsplib/tree/master. A copy of these instances is included in this repository in the tsplib-master folder. If you choose to run the code in this repository on these instances, you will need to unzip the tsplib-master folder and extract it to the same location as the TSP, TSPAlgo, and ParseTSP files.
 
 The programs in this repository are free and open software. You may replicate and use them however you like provided said usage complies
 with the terms of the GNU GLPv3 license (see LICENSE.md for details).
